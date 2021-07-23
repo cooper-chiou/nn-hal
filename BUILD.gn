@@ -94,6 +94,7 @@ shared_library("intel_nnhal") {
     "ngraph_creator/operations/src/Floor.cpp",
     "ngraph_creator/operations/src/FullyConnected.cpp",
     "ngraph_creator/operations/src/Gather.cpp",
+    "ngraph_creator/operations/src/Generate_Proposals.cpp",
     "ngraph_creator/operations/src/Greater_Equal.cpp",
     "ngraph_creator/operations/src/Greater.cpp",
     "ngraph_creator/operations/src/Grouped_Conv_2d.cpp",

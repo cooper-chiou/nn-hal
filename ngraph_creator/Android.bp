@@ -30,6 +30,7 @@ cc_library_static {
         "operations/src/Floor.cpp",
         "operations/src/FullyConnected.cpp",
         "operations/src/Gather.cpp",
+        "operations/src/Generate_Proposals.cpp",
         "operations/src/Greater.cpp",
         "operations/src/Greater_Equal.cpp",
         "operations/src/Grouped_Conv_2d.cpp",

@@ -20,6 +20,7 @@
 #include <Floor.hpp>
 #include <FullyConnected.hpp>
 #include <Gather.hpp>
+#include <Generate_Proposals.hpp>
 #include <Greater.hpp>
 #include <Greater_Equal.hpp>
 #include <Grouped_Conv_2d.hpp>
