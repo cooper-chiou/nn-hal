@@ -57,6 +57,8 @@ std::shared_ptr<OperationsBase> OperationsFactory::getOperation(
             return std::make_shared<Floor>(operationIndex);
         case OperationType::GATHER:
             return std::make_shared<Gather>(operationIndex);
+        case OperationType::GENERATE_PROPOSALS:
+            return std::make_shared<Generate_Proposals>(operationIndex);
         case OperationType::GREATER:
             return std::make_shared<Greater>(operationIndex);
         case OperationType::GREATER_EQUAL:
