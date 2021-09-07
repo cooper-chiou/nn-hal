@@ -21,17 +21,23 @@ std::shared_ptr<ngraph::Node> Generate_Proposals::createNode() {
     ALOGE("[Cooper] %s Entering", __func__);
 
     bool useNchw = false;
+    int32_t width, height, num_anchors;
 
     // 4-D Tensor specifying the score of each anchor at each location
+    // NCHW: [batches, num_anchors, height, width]
+    // OpenVINO Proposal: [batch_size, 2*K, H, W] = [batch_size, 2*num_anchors, height, width]
     auto score_anchor = getInputNode(0);
 
     // 4-D Tensor specifying the bounding box deltas
+    // [batches, height, width, num_anchors * 4]
     auto bbox_deltas = getInputNode(1);
 
     // 2-D Tensor of shape [num_anchors, 4], shape of each predefined anchor, with format [x1, y1, x2, y2].
+    // [num_anchors, 4]
     auto pre_anchor = getInputNode(2);
 
     // 2-D Tensor of shape [batches, 2], specifying the size of each image in the batch, with format [image_height, image_width]
+    // [batches, 2]
     auto size_image = getInputNode(3);
 
     // ratio from the height of original image to the height of feature map.
@@ -58,12 +64,29 @@ std::shared_ptr<ngraph::Node> Generate_Proposals::createNode() {
     auto layout = sModelInfo->ParseOperationInput<uint8_t>(mNnapiOperationIndex, 10);
 
     if (layout) useNchw = true;
+    ALOGE("[Cooper] useNchw=%d", useNchw);
 
-    if (!useNchw)  {  // No conversion needed if useNchw set
-        score_anchor = transpose(NHWC_NCHW, score_anchor);
-        bbox_deltas = transpose(NHWC_NCHW, bbox_deltas);
-    }
+    num_anchors = score_anchor[1];
+    height = score_anchor[2];
+    width = score_anchor[3];
 
+    //if (!useNchw)  {  // No conversion needed if useNchw set
+    //    score_anchor = transpose(NHWC_NCHW, score_anchor);
+    //    bbox_deltas = transpose(NHWC_NCHW, bbox_deltas);
+    //}
+
+    // nnhal:
+    // input0 = [batches, height, width, num_anchors]: NHWC: score of each anchor at each location
+    // input1 = [batches, height, width, num_anchors * 4]: NHWC: bounding box deltas
+    // input2 = [num_anchors, 4]: shape of each predefined anchor, with format [x1, y1, x2, y2]
+    // input3 = [batches, 2] : size of each image in the batch, with format [image_height, image_width]
+
+    // openvino:
+    // input0: 4D tensor of type T and shape [batch_size, 2*K, H, W] with class prediction scores
+    // K is number of anchors and H, W are height and width of the feature map
+
+    // input1: 4D tensor of type T and shape [batch_size, 4*K, H, W] with deltas for each bounding box
+    // input2: 1D tensor of type T with 3 or 4 elements: [image_height, image_width, scale_height_and_width] or [image_height, image_width, scale_height, scale_width].
     auto class_probs = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, ngraph::Shape{1024, 2, 128, 128});
     auto class_logits = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, ngraph::Shape{1024, 4, 128, 128});
     auto image_shape = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, ngraph::Shape{4});
