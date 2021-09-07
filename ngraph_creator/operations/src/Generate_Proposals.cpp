@@ -64,6 +64,16 @@ std::shared_ptr<ngraph::Node> Generate_Proposals::createNode() {
         bbox_deltas = transpose(NHWC_NCHW, bbox_deltas);
     }
 
+    // nnhal:
+    // input0 = [batches, height, width, num_anchors]: NHWC: score of each anchor at each location
+    // input1 = [batches, height, width, num_anchors * 4]: NHWC: bounding box deltas
+    // input2 = [num_anchors, 4]: shape of each predefined anchor, with format [x1, y1, x2, y2]
+    // input3 = [batches, 2] : size of each image in the batch, with format [image_height, image_width]
+
+    // openvino:
+    // input0: 4D tensor of type T and shape [batch_size, 2*K, H, W] with class prediction scores
+    // input1: 4D tensor of type T and shape [batch_size, 4*K, H, W] with deltas for each bounding box
+    // input2: 1D tensor of type T with 3 or 4 elements: [image_height, image_width, scale_height_and_width] or [image_height, image_width, scale_height, scale_width].
     auto class_probs = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, ngraph::Shape{1024, 2, 128, 128});
     auto class_logits = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, ngraph::Shape{1024, 4, 128, 128});
     auto image_shape = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, ngraph::Shape{4});
